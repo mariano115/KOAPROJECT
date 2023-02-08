@@ -1,0 +1,61 @@
+{
+  "name": "motoresdeplantillas",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "index.js --PORT=9095",
+    "startTest": "0x index.js --PORT=9095",
+    "test": "node benchmark.js",
+    "testMocha": "mocha ./test/Productos/apiProductos.test.js",
+    "testMochaAll": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mariano115/motoresDePlantillas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mariano115/motoresDePlantillas/issues"
+  },
+  "homepage": "https://github.com/mariano115/motoresDePlantillas#readme",
+  "dependencies": {
+    "@koa/cors": "^3.1.0",
+    "autocannon": "^7.10.0",
+    "axios": "^1.2.6",
+    "bcrypt": "^5.1.0",
+    "chai": "^4.3.7",
+    "compression": "^1.7.4",
+    "connect-mongo": "^4.6.0",
+    "connect-mongodb-session": "^3.1.1",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.8",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "knex": "^2.3.0",
+    "koa": "^2.14.1",
+    "koa-body": "^6.0.1",
+    "koa-passport": "^4.1.4",
+    "koa-router": "^12.0.0",
+    "koa-session": "^6.2.0",
+    "koa-static": "^5.0.0",
+    "minimist": "^1.2.7",
+    "mocha": "^10.2.0",
+    "mongoose": "^6.7.1",
+    "mysql": "^2.18.1",
+    "nodemailer": "^6.8.0",
+    "nodemon": "^2.0.20",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "socket.io": "^4.5.2",
+    "sqlite3": "^5.1.2",
+    "supertest": "^6.3.3",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^7.6.0"
+  }
+}
