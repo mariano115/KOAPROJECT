@@ -1,63 +1,83 @@
-const express = require("express");
+//KOA
+const session = require("koa-session");
+const mongoStore = require("koa-session-mongo");
+const Koa = require("koa");
+const koaPassport = require("koa-passport");
+const serve = require("koa-static");
+const { configKoaPassport } = require("./config/koaPassport.js");
+const Router = require("koa-router");
+const bodyParser = require("koa-bodyparser");
+
 const mongoose = require("mongoose");
-const session = require("express-session");
-const path = require('path');
-const { Server: HttpServer } = require("http");
-const app = express();
-const httpServer = new HttpServer(app);
-const cors = require("cors");
+const app = new Koa();
 const Config = require("./config");
-const cookieParser = require("cookie-parser");
-const userModel = require("./models/User.model");
 const MongoStore = require("connect-mongo");
-const { isValidPassword, loggerDeclaration, getDataUser } = require("./tools/utils");
+const { getProducts } = require("./service/ProductsService")
+const { createEmptyCart } = require("./service/CartService")
+const { loggerDeclaration, getDataUser } = require("./tools/utils");
 const { auth } = require("./middlewares/middlewares");
 const parseArgs = require("minimist");
-const routerSession = require("./api/routerSession")
-const routerProduct = require("./api/routerProduct")
-const routerCart = require("./api/routerCart")
-const routerMessage = require("./api/routerMessage")
+const { routerSession } = require("./api/routerSession");
+const { routerProduct } = require("./api/routerProduct");
+const { routerCart } = require("./api/routerCart");
+const { routerMessage } = require("./api/routerMessage");
+const logger = loggerDeclaration();
 
-//loggers
-const logger = loggerDeclaration()
+const router = new Router({
+  prefix: "/",
+});
 
-//passport imports
-const passport = require("passport");
-const { Strategy } = require("passport-local");
-const { getProducts } = require("./service/ProductsService");
-const { createEmptyCart } = require("./controllers/CartController");
-const LocalStrategy = Strategy;
+// sessions
+const CONFIG = {
+  maxAge: 86400000,
+  secure: false,
+  renew: false,
+  rolling: false,
+  signed: true,
+  /* store: mongoStore.create({
+    db: Config.urlMongo,
+    mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
+  }) */
+};
+app.keys = ["secreto"];
 
-//servidor
-app.use(express.urlencoded({ extended: true }));
-app.use("/public", express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-app.use(cors());
+app.use(session(CONFIG, app));
 
-/*----------- Session -----------*/
-app.use(cookieParser("secreto"));
-app.use(
-  session({
-    store: MongoStore.create({
-      mongoUrl: Config.urlMongo,
-      mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
-    }),
-    secret: Config.secretSession,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 60000 },
-  })
-);
+// body parser
+app.use(bodyParser());
 
-/*------------Routers-----------*/
-app.use("/session", routerSession)
-app.use("/productos", routerProduct)
-app.use("/carrito", routerCart)
-app.use("/mensajes", routerMessage)
+// authentication
+configKoaPassport();
+app.use(koaPassport.initialize());
+app.use(koaPassport.session());
 
+// routes
+app.use(routerSession);
+app.use(routerProduct);
+app.use(routerCart);
+app.use(routerMessage);
+app.use(router.routes());
+
+app.use(serve("public"));
+
+/* app.use(
+  session(
+    {
+      store: MongoStore.create({
+        mongoUrl: Config.urlMongo,
+        mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
+      }),
+      secret: Config.secretSession,
+      resave: false,
+      saveUninitialized: false,
+      cookie: { maxAge: 60000 },
+    },
+    app
+  )
+); */
 
 //Puerto enviado por ARGS
-const args = parseArgs(process.argv.slice(2), {default: {PORT: '9090'}})
+const args = parseArgs(process.argv.slice(2), { default: { PORT: "9090" } });
 const PORT = process.env.PORT || args.PORT || 9090;
 
 mongoose.connect(
@@ -71,90 +91,59 @@ mongoose.connect(
   }
 );
 
-//middlewares passport
-app.use(passport.initialize());
-app.use(passport.session());
+router.get("/", auth, (ctx, next) => {
+  logger.info("Redireccion a ruta '/home' autenticacion Completada");
+  ctx.redirect("/home");
+});
 
-passport.use(
+router.get(
   "login",
-  new LocalStrategy(
-    { usernameField: "email", passwordField: "password" },
-    (email, password, done) => {
-      mongoose.connect(Config.urlMongo);
-      try {
-        userModel.findOne(
-          {
-            email,
-          },
-          (err, user) => {
-            logger.info(user);
-            if (err) {
-              return done(err, null);
-            }
-
-            if (!user) {
-              return done(null, false);
-            }
-
-            if (!isValidPassword(user, password)) {
-              return done(null, false);
-            }
-
-            return done(null, user);
-          }
-        );
-      } catch (e) {
-        return done(e, null);
+  async (ctx, next) => {
+    logger.info("Peticion GET a ruta '/login'");
+    return koaPassport.authenticate("local", (err, user, info, status) => {
+      if (user) {
+        ctx.login(user);
+        ctx.session.email = user.email;
+        ctx.body = { status: "logged in" };
+        ctx.redirect("/home");
+      } else {
+        ctx.status = 401;
+        ctx.body = { status: "error" };
       }
-    }
-  )
-);
-
-//serializar y deserializar
-
-passport.serializeUser((user, done) => {
-  done(null, user._id);
-});
-
-passport.deserializeUser((id, done) => {
-  userModel.findById(id, function (err, user) {
-    done(err, user);
-  });
-});
-
-app.get("/", auth, (req, res) => {
-  logger.info("Redireccion a ruta '/home' autenticacion Completada")
-  res.redirect("/home");
-});
-
-app.get(
-  "/login",
-  passport.authenticate("login", {
-    failureRedirect: "/login-error",
-  }),
-  (req, res) => {
-    logger.info("Peticion GET a ruta '/login'")
-    req.session.email = req.body.email;
-    res.redirect("/home");
+    })(ctx);
   }
 );
 
-app.get("/home", auth, async (req, res) => {
-  logger.info("Peticion GET a ruta '/home'");
-  const logedUser = await getDataUser(req.session.email);
-  const response = {
-    products: await getProducts(),
-    cart: await createEmptyCart(logedUser.email, logedUser.address),
-    user: logedUser,
-  };
-  res.send(response);
+router.get("auth/status", async (ctx) => {
+  if (ctx.isAuthenticated()) {
+    ctx.body = { status: "logged in" };
+  } else {
+    ctx.status = 401;
+    ctx.body = { status: "not logged in" };
+  }
 });
 
-app.use('*',(req, res) => {
-  logger.warn(`Ruta Incorrecta ${req.originalUrl}`)
-  res.send(`Ruta Incorrecta ${req.originalUrl}`)
-})
+router.get("home", auth, async (ctx) => {
+  logger.info("Peticion GET a ruta '/home'");
+  try {
+    const logedUser = await getDataUser(ctx.session.email);
+    const response = {
+      products: await getProducts(),
+      cart: await createEmptyCart(logedUser.email, logedUser.address),
+      user: logedUser,
+    };
+    ctx.body = response
+  } catch (error) {
+    logger.warn(error);
+    ctx.status = 500;
+    ctx.body = "Hubo un problema para acceder a la ruta /home";
+  }
 
-httpServer.listen(PORT, () =>
-  logger.info("servidor Levantado en el puerto " + PORT)
-);
+});
+
+/* router.use("*", (req, res) => {
+  logger.warn(`Ruta Incorrecta ${req.originalUrl}`);
+  res.send(`Ruta Incorrecta ${req.originalUrl}`);
+}); */
+
+app.listen(PORT, () => logger.info("servidor Levantado en el puerto " + PORT));

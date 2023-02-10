@@ -1,27 +1,40 @@
 const { loggerDeclaration } = require("../tools/utils");
 const SessionService = require("../service/SessionService");
+const koaPassport = require("koa-passport");
 const logger = loggerDeclaration();
 
-const register = async (req, res) => {
-  res.send(await SessionService.register(req.body));
+const register = async (ctx, next) => {
+  ctx.body = await SessionService.register(ctx.request.body);
 };
 
-const logout = (req, res) => {
+const logout = async (ctx, next) => {
   logger.info("Peticion POST a ruta '/logout'");
   try {
-    res.clearCookie("currentSession");
-    req.session.destroy();
-    res.status(200).json({
-      status: "success",
-      message: "Session closed",
-    });
-  } catch (e) {
-    res.status(500).json({ status: "error", message: "Logout error" });
+    ctx.logout()
+    ctx.body = { status: "Session closed" };
+  } catch (error) {
+    logger.warn(error)
+    ctx.status = 500;
+    ctx.body = { status: "Error in logout" };
   }
 };
 
-const finishBuy = async (req, res) => {
-  res.send(await SessionService.finishBuy(req.body));
+
+const loginController = async ctx => {
+  
+  return koaPassport.authenticate('local', (err, user, info, status) => {
+    if (user) {
+      ctx.login(user)
+      ctx.body = { status: 'logged in' }
+    } else {
+      ctx.status = 401
+      ctx.body = { status: 'error' }
+    }
+  })(ctx)
+}
+
+const finishBuy = async (ctx, next) => {
+  ctx.body = await SessionService.finishBuy(ctx.request.body);
 };
 
-module.exports = { register, logout, finishBuy };
+module.exports = { register, logout, finishBuy, loginController };

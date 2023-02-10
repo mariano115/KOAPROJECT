@@ -1,23 +1,26 @@
 const ProductService = require("../service/ProductsService");
 
-const getProducts = async (req, res) => {
-  res.send(await ProductService.getProducts());
+const getProducts = async (ctx, next) => {
+  ctx.body = await ProductService.getProducts();
 };
 
-const getProductById = async (req, res) => {
-  res.send(await ProductService.getProductById(req.params.id));
+const getProductById = async (ctx, next) => {
+  ctx.body = await ProductService.getProductById(ctx.params.id);
 };
 
-const addProduct = async (req, res) => {
-  res.send(await ProductService.addProduct(req.body));
+const addProduct = async (ctx, next) => {
+  ctx.body = await ProductService.addProduct(ctx.request.body);
 };
 
-const deleteProductById = async (req, res) => {
-  res.send(await ProductService.deleteProductById(req.params.id));
+const deleteProductById = async (ctx, next) => {
+  ctx.body = await ProductService.deleteProductById(ctx.params.id);
 };
 
-const updateProductById = async (req, res) => {
-  res.send(await ProductService.updateProductById(req.params.id, req.body));
+const updateProductById = async (ctx, next) => {
+  ctx.body = await ProductService.updateProductById(
+    ctx.params.id,
+    ctx.request.body
+  );
 };
 
 module.exports = {
