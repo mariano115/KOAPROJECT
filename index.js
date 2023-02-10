@@ -1,6 +1,5 @@
 //KOA
 const session = require("koa-session");
-const mongoStore = require("koa-session-mongo");
 const Koa = require("koa");
 const koaPassport = require("koa-passport");
 const serve = require("koa-static");
@@ -11,7 +10,6 @@ const bodyParser = require("koa-bodyparser");
 const mongoose = require("mongoose");
 const app = new Koa();
 const Config = require("./config");
-const MongoStore = require("connect-mongo");
 const { getProducts } = require("./service/ProductsService")
 const { createEmptyCart } = require("./service/CartService")
 const { loggerDeclaration, getDataUser } = require("./tools/utils");
@@ -29,14 +27,14 @@ const router = new Router({
 
 // sessions
 const CONFIG = {
-  maxAge: 86400000,
+  maxAge: 60000,
   secure: false,
   renew: false,
   rolling: false,
   signed: true,
   /* store: mongoStore.create({
-    db: Config.urlMongo,
-    mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
+    db: 'Cluster0',
+    url: Config.urlMongo
   }) */
 };
 app.keys = ["secreto"];
@@ -59,22 +57,6 @@ app.use(routerMessage);
 app.use(router.routes());
 
 app.use(serve("public"));
-
-/* app.use(
-  session(
-    {
-      store: MongoStore.create({
-        mongoUrl: Config.urlMongo,
-        mongoOptions: { useNewUrlParser: true, useUnifiedTopology: true },
-      }),
-      secret: Config.secretSession,
-      resave: false,
-      saveUninitialized: false,
-      cookie: { maxAge: 60000 },
-    },
-    app
-  )
-); */
 
 //Puerto enviado por ARGS
 const args = parseArgs(process.argv.slice(2), { default: { PORT: "9090" } });
@@ -140,10 +122,5 @@ router.get("home", auth, async (ctx) => {
   }
 
 });
-
-/* router.use("*", (req, res) => {
-  logger.warn(`Ruta Incorrecta ${req.originalUrl}`);
-  res.send(`Ruta Incorrecta ${req.originalUrl}`);
-}); */
 
 app.listen(PORT, () => logger.info("servidor Levantado en el puerto " + PORT));
