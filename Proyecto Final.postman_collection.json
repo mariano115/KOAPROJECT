@@ -47,7 +47,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"prueba4@gmail.com\",\r\n    \"password\": \"123456\",\r\n    \"name\": \"nombreTest2\",\r\n    \"address\": \"Calle falsa 123\",\r\n    \"age\": 22,\r\n    \"phone\": \"+54 1167876544\",\r\n    \"photo\": \"https://assets.puzzlefactory.pl/puzzle/353/899/original.jpg\"\r\n}",
+							"raw": "{\r\n    \"email\": \"prueba5@gmail.com\",\r\n    \"password\": \"123456\",\r\n    \"name\": \"nombreTest2\",\r\n    \"address\": \"Calle falsa 123\",\r\n    \"age\": 22,\r\n    \"phone\": \"+54 1167876544\",\r\n    \"photo\": \"https://assets.puzzlefactory.pl/puzzle/353/899/original.jpg\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -96,7 +96,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"idCarrito\": \"63b6f0d1508368e8dfd62860\"\r\n}",
+							"raw": "{\r\n    \"idCarrito\": \"63beccad2b3dfda9d2c234af\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -152,6 +152,26 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Auth Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:9090/auth/status",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"auth",
+								"status"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -201,7 +221,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9090/carrito/63b83da2008a7a24604da8ce?admin=true",
+							"raw": "http://localhost:9090/carrito/63b83e4536b13789382069ee?admin=true",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -209,7 +229,7 @@
 							"port": "9090",
 							"path": [
 								"carrito",
-								"63b83da2008a7a24604da8ce"
+								"63b83e4536b13789382069ee"
 							],
 							"query": [
 								{
@@ -350,7 +370,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:9090/productos/63ceb59b5030199fc9f88b8a?admin=true",
+							"raw": "http://localhost:9090/productos/63d3f8337dad90c19b3e77f4?admin=true",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -358,7 +378,7 @@
 							"port": "9090",
 							"path": [
 								"productos",
-								"63ceb59b5030199fc9f88b8a"
+								"63d3f8337dad90c19b3e77f4"
 							],
 							"query": [
 								{
@@ -385,7 +405,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9090/productos/63beccf12b3dfda9d2c234ba?admin=true",
+							"raw": "http://localhost:9090/productos/63e114e9d2c5bdc121894ee2?admin=true",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -393,7 +413,7 @@
 							"port": "9090",
 							"path": [
 								"productos",
-								"63beccf12b3dfda9d2c234ba"
+								"63e114e9d2c5bdc121894ee2"
 							],
 							"query": [
 								{
